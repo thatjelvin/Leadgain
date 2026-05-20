@@ -9,10 +9,13 @@ const EMAIL_REGEX = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
 
 function classifyEmail(email: string, firstName: string | null, lastName: string | null): EmailCandidate["emailType"] {
   const lower = email.toLowerCase();
+  const localPart = lower.split("@")[0] ?? "";
   if (firstName && lower.includes(firstName.toLowerCase())) return "direct-business";
   if (lastName && lower.includes(lastName.toLowerCase())) return "direct-business";
-  if (/^(info|contact|hello|admin|support)@/.test(lower)) return "generic";
-  return "direct-business";
+  if (/^(info|contact|hello|admin|support|sales|marketing|team|office|enquiries|enquiry)$/.test(localPart)) {
+    return "generic";
+  }
+  return "personal";
 }
 
 async function crawlEmails(website: string, firstName: string | null, lastName: string | null) {
@@ -54,13 +57,16 @@ async function crawlEmails(website: string, firstName: string | null, lastName: 
 }
 
 function patternCandidates(firstName: string, lastName: string, domain: string) {
-  const f = firstName.toLowerCase();
-  const l = lastName.toLowerCase();
+  const f = firstName.trim().toLowerCase();
+  const l = lastName.trim().toLowerCase();
+  if (!f || !l) return [];
+
+  const firstInitial = f.charAt(0);
   return [
     `${f}@${domain}`,
-    `${f[0]}.${l}@${domain}`,
+    `${firstInitial}.${l}@${domain}`,
     `${f}.${l}@${domain}`,
-    `${f[0]}${l}@${domain}`,
+    `${firstInitial}${l}@${domain}`,
     `${f}${l}@${domain}`,
   ];
 }

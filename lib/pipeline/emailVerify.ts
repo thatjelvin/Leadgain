@@ -2,13 +2,13 @@ import { promises as dns } from "node:dns";
 import { smtpVerifyMailbox } from "@/lib/utils/smtp";
 import type { EmailCandidate } from "@/lib/types";
 
-const SYNTAX_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+const EMAIL_SYNTAX_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 export async function verifyCandidates(candidates: EmailCandidate[]) {
   const verified: EmailCandidate[] = [];
 
   for (const candidate of candidates) {
-    if (!SYNTAX_REGEX.test(candidate.email)) {
+    if (!EMAIL_SYNTAX_REGEX.test(candidate.email)) {
       continue;
     }
 

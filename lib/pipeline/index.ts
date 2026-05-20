@@ -9,7 +9,6 @@ import type { PipelineStep, SearchRequest } from "@/lib/types";
 
 interface RunLeadPipelineInput {
   searchId: string;
-  userId: string;
   request: SearchRequest;
 }
 
@@ -22,9 +21,9 @@ async function updateSearch(
 }
 
 export async function runLeadPipeline({ searchId, request }: RunLeadPipelineInput) {
-  const timeoutMs = 180_000;
+  const pipelineTimeoutMs = 180_000;
   const startedAt = Date.now();
-  const deadline = startedAt + timeoutMs;
+  const deadline = startedAt + pipelineTimeoutMs;
   const supabase = createSupabaseAdminClient();
 
   const checkTimeout = () => Date.now() > deadline;
@@ -60,6 +59,7 @@ export async function runLeadPipeline({ searchId, request }: RunLeadPipelineInpu
     }
 
     await updateSearch(searchId, {
+      status: "running",
       current_step: "owner_identification",
       status_message: "Identifying business owners...",
     });

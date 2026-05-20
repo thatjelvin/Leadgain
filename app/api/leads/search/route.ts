@@ -60,10 +60,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Failed to create search" }, { status: 500 });
   }
 
+  // Decouple the long-running pipeline from the request/response lifecycle as required.
   setTimeout(() => {
     void runLeadPipeline({
       searchId: inserted.id,
-      userId: user.id,
       request: {
         niche: parsed.data.niche,
         location: parsed.data.location,
@@ -71,6 +71,8 @@ export async function POST(request: Request) {
         leadCount: parsed.data.leadCount,
         emailPriority: parsed.data.emailPriority,
       },
+    }).catch((pipelineError) => {
+      console.error("Pipeline background execution failed", pipelineError);
     });
   }, 0);
 

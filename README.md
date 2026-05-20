@@ -18,7 +18,7 @@ cp .env.example .env.local
 
 3. Run SQL schema in Supabase SQL editor:
 
-- `/home/runner/work/Leadgain/Leadgain/supabase/schema.sql`
+- `supabase/schema.sql`
 
 4. Start development server:
 

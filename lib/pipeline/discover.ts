@@ -3,6 +3,15 @@ import { extractDomain } from "@/lib/utils/url";
 import type { BusinessDiscoveryItem } from "@/lib/types";
 
 export async function discoverBusinesses(niche: string, location: string, targetLeads: number) {
+  const deriveBusinessName = (title: string | undefined, domain: string) => {
+    if (!title) return domain;
+    const cleaned = title
+      .replace(/\s+\|\s+.*$/, "")
+      .replace(/\s+-\s+.*$/, "")
+      .trim();
+    return cleaned || domain;
+  };
+
   const queries = [
     `"${niche}" in "${location}"`,
     `"${niche}" "${location}" contact`,
@@ -19,7 +28,7 @@ export async function discoverBusinesses(niche: string, location: string, target
       if (!domain || deduped.has(domain)) continue;
 
       deduped.set(domain, {
-        businessName: result.title?.split("|")[0]?.split("-")[0]?.trim() || domain,
+        businessName: deriveBusinessName(result.title, domain),
         website,
         location: result.snippet ?? location,
         source: "serpapi",
@@ -57,5 +66,5 @@ export async function discoverBusinesses(niche: string, location: string, target
     }
   }
 
-  return Array.from(deduped.values()).slice(0, Math.max(targetLeads * 2, targetLeads));
+  return Array.from(deduped.values()).slice(0, targetLeads * 2);
 }
