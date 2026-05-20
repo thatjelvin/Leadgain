@@ -3,8 +3,13 @@ import { SearchRunClient } from "@/components/SearchRunClient";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import type { PipelineStep, SearchStatus } from "@/lib/types";
 
-export default async function SearchPage({ params }: { params: { id: string } }) {
-  const supabase = createSupabaseServerClient();
+export default async function SearchPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -16,7 +21,7 @@ export default async function SearchPage({ params }: { params: { id: string } })
   const { data: search } = await supabase
     .from("search_history")
     .select("id,lead_count_requested,status,current_step,status_message")
-    .eq("id", params.id)
+    .eq("id", id)
     .eq("user_id", user.id)
     .single();
 

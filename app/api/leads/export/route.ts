@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 
 export const runtime = "nodejs";
@@ -21,7 +21,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Invalid query parameters" }, { status: 400 });
   }
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -64,11 +64,28 @@ export async function GET(request: Request) {
   const date = new Date().toISOString().slice(0, 10);
 
   if (format === "xlsx") {
-    const worksheet = XLSX.utils.json_to_sheet(rows);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Leads");
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Leads");
+    const headers = [
+      "Business Name",
+      "Owner First Name",
+      "Owner Last Name",
+      "Email",
+      "Email Type",
+      "Email Verified",
+      "Phone",
+      "Website",
+      "Location",
+      "Source",
+    ];
 
-    const buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
+    worksheet.addRow(headers);
+    for (const row of rows) {
+      worksheet.addRow(headers.map((header) => row[header as keyof typeof row]));
+    }
+
+    const arrayBuffer = await workbook.xlsx.writeBuffer();
+    const buffer = Buffer.from(arrayBuffer);
 
     return new NextResponse(buffer, {
       headers: {
